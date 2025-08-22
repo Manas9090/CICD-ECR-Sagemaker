@@ -1,26 +1,39 @@
-# inference.py
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-import uvicorn
+# app.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import joblib
+import numpy as np
+import os
 
 app = FastAPI()
 
-# Health check
+# Define input data model for prediction
+class PredictionInput(BaseModel):
+    inputs: list[list[float]]
+
+# Load your trained model (.pkl) at startup
+MODEL_PATH = "/opt/program/model.pkl"  # make sure your model is here
+if os.path.exists(MODEL_PATH):
+    model = joblib.load(MODEL_PATH)
+else:
+    model = None
+    print("Warning: model.pkl not found, using dummy predictions.")
+
+# Health check endpoint
 @app.get("/ping")
-async def ping():
-    return {"status": "OK"}
+def ping():
+    return {"status": "ok"}
 
 # Inference endpoint
 @app.post("/invocations")
-async def invocations(request: Request):
+def invocations(payload: PredictionInput):
     try:
-        payload = await request.json()
-        # Replace with your real inference logic
-        result = {"received": payload, "prediction": "dummy_output"}
-        return JSONResponse(content=result)
+        data = np.array(payload.inputs)
+        if model:
+            predictions = model.predict(data).tolist()
+        else:
+            # dummy output if model is missing
+            predictions = ["dummy_output" for _ in range(len(data))]
+        return {"predictions": predictions, "received": payload.inputs}
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=400)
-
-# Optional local run
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+        raise HTTPException(status_code=400, detail=str(e))
