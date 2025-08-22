@@ -1,0 +1,7 @@
+boto3==1.34.131       # only if your container needs AWS SDK
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0   # if your model uses sklearn
+joblib==1.4.2         # to load .pkl models
+flask==3.0.3
+gunicorn==22.0.0
