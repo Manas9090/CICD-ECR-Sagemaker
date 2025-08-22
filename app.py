@@ -1,25 +1,26 @@
 # inference.py
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import uvicorn
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Health check
-@app.route("/ping", methods=["GET"])
-def ping():
-    return "OK", 200
+@app.get("/ping")
+async def ping():
+    return {"status": "OK"}
 
-# Inference
-@app.route("/invocations", methods=["POST"])
-def invocations():
+# Inference endpoint
+@app.post("/invocations")
+async def invocations(request: Request):
     try:
-        payload = request.get_json(force=True, silent=True)
-        # TODO: replace with your real inference logic
-        # Example: echo back the payload
+        payload = await request.json()
+        # Replace with your real inference logic
         result = {"received": payload, "prediction": "dummy_output"}
-        return jsonify(result), 200
+        return JSONResponse(content=result)
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return JSONResponse(content={"error": str(e)}, status_code=400)
 
-# Local run (optional)
+# Optional local run
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
