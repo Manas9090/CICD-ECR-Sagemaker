@@ -1,0 +1,5 @@
+#!/bin/bash
+# serve: SageMaker entry point to run the model server
+
+# Start Gunicorn serving the Flask app
+exec gunicorn -b 0.0.0.0:8080 app:app
