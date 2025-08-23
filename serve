@@ -1,0 +1,4 @@
+#!/bin/bash
+# Simple Flask server example
+export FLASK_APP=inference.py
+flask run --host=0.0.0.0 --port=8080
